@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>تحلیل‌گر نمودار | نسخه آزمایشی</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<header>
+  <div class="brand">📈 تحلیل‌گر نمودار</div>
+  <p>ابزار آموزشی برای خواندن داده‌ها و بررسی شاخص‌های تکنیکال</p>
+</header>
+<main>
+  <section class="notice">
+    <strong>مهم:</strong> این ابزار تضمین‌کننده سود نیست و توصیه خرید/فروش شخصی نمی‌دهد. تحلیل تصویر ممکن است اشتباه کند؛ قبل از هر تصمیم، داده‌ها را بررسی کن.
+    نسخه رایگان و بدون حساب کاربری است. در این نسخه، پردازش تصویر در مرورگر انجام می‌شود.
+  </section>
+
+  <section class="card">
+    <h2>۱) تصویر جدول یا نمودار را بارگذاری کن</h2>
+    <p>بهترین نتیجه با تصویر واضح، مستقیم و بدون برش به دست می‌آید. تصویر باید شامل نام ستون‌ها و اعداد باشد.</p>
+    <label class="upload" for="imageInput">انتخاب تصویر جدول / نمودار</label>
+    <input id="imageInput" type="file" accept="image/*">
+    <div id="previewWrap" class="preview hidden">
+      <img id="preview" alt="پیش‌نمایش تصویر بارگذاری‌شده">
+      <button id="clearImage" class="secondary">حذف تصویر</button>
+    </div>
+    <button id="readImage">خواندن نوشته‌های تصویر (OCR)</button>
+    <p id="ocrStatus" class="muted" aria-live="polite">هنوز تصویری انتخاب نشده است.</p>
+    <label for="ocrText">متن استخراج‌شده (اگر لازم بود، اصلاحش کن)</label>
+    <textarea id="ocrText" rows="5" placeholder="متن تشخیص‌داده‌شده از تصویر اینجا می‌آید؛ می‌توانی آن را اصلاح کنی."></textarea>
+  </section>
+
+  <section class="card">
+    <h2>۲) اطلاعات دارایی و بازه</h2>
+    <div class="grid">
+      <label>نوع دارایی
+        <select id="assetType">
+          <option value="stock">سهام</option>
+          <option value="crypto">ارز دیجیتال</option>
+          <option value="other">سایر</option>
+        </select>
+      </label>
+      <label>نام نماد / دارایی
+        <input id="symbol" placeholder="مثلاً نام نماد یا BTC">
+      </label>
+      <label>بازار / صرافی (اختیاری)
+        <input id="market" placeholder="مثلاً بازار موردنظر">
+      </label>
+      <label>بازه زمانی جدول
+        <select id="period">
+          <option value="1d">روزانه</option>
+          <option value="1w">هفتگی</option>
+          <option value="1mo" selected>یک‌ماهه</option>
+          <option value="3mo">سه‌ماهه</option>
+          <option value="1y">یک‌ساله</option>
+          <option value="unknown">نامشخص</option>
+        </select>
+      </label>
+    </div>
+    <h3>چک‌لیست داده‌هایی که بهتر است همراه تصویر باشند</h3>
+    <ul>
+      <li>برای جدول قیمت: تاریخ، قیمت بازشدن (Open)، بیشترین (High)، کمترین (Low)، بسته‌شدن (Close) و حجم (Volume).</li>
+      <li>برای نمودار: نام دارایی، تایم‌فریم، محور قیمت و تاریخ‌های قابل‌خواندن.</li>
+      <li>برای تحلیل بنیادی سهام: درآمد، سود خالص، بدهی، جریان نقدی، تعداد سهام، نسبت‌های ارزش‌گذاری و دوره گزارش.</li>
+      <li>برای ارز دیجیتال: حجم معاملات، ارزش بازار، عرضه در گردش و منبع/تاریخ داده‌ها؛ این موارد به‌تنهایی برای نتیجه‌گیری کافی نیستند.</li>
+    </ul>
+    <p class="muted">برای جدول یک‌ماهه، بهتر است دست‌کم ۲۰ تا ۳۰ ردیف روزانه همراه تاریخ و ستون‌های قیمت و حجم داشته باشی. برای میانگین‌های ۵۰ و ۲۰۰ روزه، تاریخچه طولانی‌تر لازم است.</p>
+  </section>
+
+  <section class="card">
+    <h2>۳) در صورت داشتن داده عددی، وارد کن</h2>
+    <p>هر خط یک روز/ردیف باشد و مقادیر را با کاما جدا کن: <code>تاریخ,بسته‌شدن,حجم</code>. نمونه: <code>2026-10-01,125.4,32000</code></p>
+    <label for="dataInput">داده‌های قیمت</label>
+    <textarea id="dataInput" rows="7" placeholder="2026-10-01,125.4,32000&#10;2026-10-02,127.1,35000"></textarea>
+    <div class="actions">
+      <button id="analyze">تحلیل داده‌ها</button>
+      <button id="sample" class="secondary">بارگذاری نمونه آموزشی</button>
+      <button id="clearData" class="secondary">پاک‌کردن داده‌ها</button>
+    </div>
+    <p class="muted">این نسخه داده‌ها را از تصویر به‌طور خودکار به جدول عددی قابل‌اعتماد تبدیل نمی‌کند؛ نتیجه بهتر است با داده‌های عددیِ بررسی‌شده انجام شود.</p>
+  </section>
+
+  <section id="results" class="card hidden">
+    <h2>نتیجه آموزشی</h2>
+    <div id="summary" class="summary"></div>
+    <div class="grid result-grid">
+      <div><h3>میانگین متحرک ساده (SMA)</h3><p id="sma"></p></div>
+      <div><h3>RSI تقریبی</h3><p id="rsi"></p></div>
+      <div><h3>تغییر کل بازه</h3><p id="change"></p></div>
+      <div><h3>حجم</h3><p id="volume"></p></div>
+    </div>
+    <canvas id="priceChart" height="110"></canvas>
+    <h3>محدودیت‌ها و بررسی‌های بعدی</h3>
+    <ul id="caveats"></ul>
+  </section>
+  <footer>ساخته‌شده برای آموزش و تمرین — هیچ داده‌ای به سرور این سایت ارسال نمی‌شود، به‌جز درخواست بارگذاری کتابخانه OCR از CDN هنگام نیاز.</footer>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
